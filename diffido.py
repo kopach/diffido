@@ -279,39 +279,26 @@ def send_email(to, subject='diffido', body='', from_=None):
     :type from_: str
     :returns: True in case of success
     :rtype: bool"""
+    mail_host="smtp.126.com"
+    mail_user="hard_code_user@126.com"
+    mail_pass="hard_code_password"
+
     msg = MIMEText(body)
     msg['Subject'] = subject
-    msg['From'] = from_ or EMAIL_FROM
+    msg['From'] = mail_user
     msg['To'] = to
-    starttls = SMTP_SETTINGS.get('smtp-starttls')
-    use_ssl = SMTP_SETTINGS.get('smtp-use-ssl')
-    args = {}
-    for key, value in SMTP_SETTINGS.items():
-        if key in ('smtp-starttls', 'smtp-use-ssl'):
-            continue
-        if key in ('smtp-port'):
-            value = int(value)
-        key = key.replace('smtp-', '', 1).replace('-', '_')
-        args[key] = value
-    try:
-        if use_ssl:
-            with smtplib.SMTP_SSL(**args) as s:
-                s.send_message(msg)
-        else:
-            tls_args = {}
-            for key in ('ssl_keyfile', 'ssl_certfile', 'ssl_context'):
-                if key in args:
-                    tls_args = args[key]
-                    del args[key]
-            with smtplib.SMTP(**args) as s:
-                if starttls:
-                    s.starttls(**tls_args)
-                    s.ehlo_or_helo_if_needed()
-                s.send_message(msg)
-    except Exception as e:
-        logger.error('unable to send email to %s: %s' % (to, e))
-        return False
-    return True
+
+    try:  
+        server = smtplib.SMTP()  
+        server.connect(mail_host)
+        server.login(mail_user,mail_pass)
+        server.sendmail(mail_user, to, msg.as_string())  
+        server.close()  
+        return True  
+    except Exception as e:  
+        print(str(e))
+        return False  
+
 
 
 def get_history(id_, limit=None, add_info=False):
