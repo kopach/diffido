@@ -279,8 +279,8 @@ def send_email(to, subject='diffido', body='', from_=None):
     :type from_: str
     :returns: True in case of success
     :rtype: bool"""
-    mail_host="smtp.126.com"
-    mail_user="hard_code_user@126.com"
+    mail_host="smtp.example.com"
+    mail_user="hard_code_user@example.com"
     mail_pass="hard_code_password"
 
     msg = MIMEText(body)
@@ -289,14 +289,16 @@ def send_email(to, subject='diffido', body='', from_=None):
     msg['To'] = to
 
     try:  
-        server = smtplib.SMTP()  
-        server.connect(mail_host)
+        server = smtplib.SMTP(mail_host, 587)
+        server.ehlo()
+        server.starttls()
         server.login(mail_user,mail_pass)
         server.sendmail(mail_user, to, msg.as_string())  
-        server.close()  
+        server.quit()  
+        logger.info('Email to %s sent sucesfully' % (to))
         return True  
     except Exception as e:  
-        print(str(e))
+        logger.error('unable to send email to %s: %s' % (to, e))
         return False  
 
 
